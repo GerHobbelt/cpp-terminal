@@ -76,7 +76,7 @@ void Term::Terminal::setBadStateReturnCode()
   std::pair<bool, std::string> returnCode{Private::getenv("CPP_TERMINAL_BADSTATE")};
   try
   {
-    if(returnCode.first && stoi(returnCode.second) != EXIT_SUCCESS) m_badReturnCode = stoi(returnCode.second);
+    if(returnCode.first && stoi(returnCode.second) != EXIT_SUCCESS) m_badReturnCode = static_cast<std::uint8_t>(stoi(returnCode.second));
   }
   catch(...)
   {
@@ -106,7 +106,7 @@ void Term::Terminal::setRawMode()
     raw.c_cflag |= CS8;
     raw.c_lflag &= ~(ECHO | ICANON | IEXTEN);
     if(m_options.has(Option::NoSignalKeys)) { raw.c_lflag &= ~ISIG; }
-    raw.c_cc[VMIN]  = 0;
+    raw.c_cc[VMIN]  = 1;
     raw.c_cc[VTIME] = 0;
     if(tcsetattr(Private::out.fd(), TCSAFLUSH, &raw) == -1) { throw Term::Exception("tcsetattr() failed"); }
   }

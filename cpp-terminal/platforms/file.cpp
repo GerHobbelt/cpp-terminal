@@ -29,6 +29,11 @@ Term::Private::OutputFileHandler& out = reinterpret_cast<Term::Private::OutputFi
 
 }  // namespace Term
 
+std::recursive_mutex Term::Private::FileHandler::m_mutex{};
+
+void Term::Private::FileHandler::lock() const { m_mutex.lock(); }
+void Term::Private::FileHandler::unlock() const { m_mutex.unlock(); }
+
 Term::Private::FileHandler::FileHandler(const std::string& filename, const std::string& mode)
 {
 #if defined(_WIN32)
@@ -71,6 +76,8 @@ Term::Private::FileHandler::~FileHandler()
   std::fclose(m_file);
 }
 
+bool Term::Private::FileHandler::try_lock() const { return m_mutex.try_lock(); }
+
 bool Term::Private::FileHandler::null() const { return m_null; }
 
 FILE* Term::Private::FileHandler::file() { return m_file; }
@@ -109,35 +116,42 @@ Term::Private::FileInitializer::~FileInitializer()
 int Term::Private::OutputFileHandler::write(const std::string& str)
 {
   if(str.empty()) return 0;
+    //std::lock_guard<std::mutex> lock(m_mut);
 #if defined(_WIN32)
   DWORD dwCount{0};
-  if(WriteConsole(handle(), &str[0], str.size(), &dwCount, nullptr) == 0) return -1;
+  if(WriteConsole(handle(), &str[0], static_cast<DWORD>(str.size()), &dwCount, nullptr) == 0) return -1;
   else
-    return dwCount;
+    return static_cast<int>(dwCount);
 #else
   return ::write(fd(), &str[0], str.size());
 #endif
 }
 
+std::mutex Term::Private::OutputFileHandler::m_mut{};
+
 int Term::Private::OutputFileHandler::write(const char& ch)
 {
+  //std::lock_guard<std::mutex> lock(m_mut);
 #if defined(_WIN32)
   DWORD dwCount{0};
   if(WriteConsole(handle(), &ch, 1, &dwCount, nullptr) == 0) return -1;
   else
-    return dwCount;
+    return static_cast<int>(dwCount);
 #else
   return ::write(fd(), &ch, 1);
 #endif
 }
 
+std::mutex Term::Private::InputFileHandler::m_mut{};
+
 std::string Term::Private::InputFileHandler::read()
 {
+  //std::lock_guard<std::mutex> lock(m_mut);
 #if defined(_WIN32)
   DWORD       nread{0};
   std::string ret(4096, '\0');
   errno = 0;
-  ReadConsole(Private::in.handle(), &ret[0], ret.size(), &nread, nullptr);
+  ReadConsole(Private::in.handle(), &ret[0], static_cast<DWORD>(ret.size()), &nread, nullptr);
   return ret.c_str();
 #else
   std::size_t nread{0};
@@ -146,8 +160,8 @@ std::string Term::Private::InputFileHandler::read()
   {
     std::string ret(nread, '\0');
     errno = 0;
-    ::ssize_t nread{::read(Private::in.fd(), &ret[0], ret.size())};
-    if(nread == -1 && errno != EAGAIN) { throw Term::Exception("read() failed"); }
+    ::ssize_t nnread{::read(Private::in.fd(), &ret[0], ret.size())};
+    if(nnread == -1 && errno != EAGAIN) { throw Term::Exception("read() failed"); }
     return ret.c_str();
   }
   else
