@@ -127,7 +127,7 @@ int main()
               << "*\n";
 
 #ifdef _WIN32
-    MessageBox(NULL, "Hello, world", "caption", 0);
+    MessageBoxA(NULL, "Hello, world", "caption", 0);
 #endif
   }
   catch(const Term::Exception& re)

@@ -24,7 +24,7 @@ int main()
 {
   std::cout << Term::color_fg(Term::Color::Name::Red) << "Hello world !" << color_fg(Term::Color::Name::Default) << std::endl;
 #ifdef _WIN32
-  MessageBox(NULL, "Hello, world", "caption", 0);
+  MessageBoxA(NULL, "Hello, world", "caption", 0);
 #endif
   return 0;
 }
