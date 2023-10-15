@@ -8,13 +8,10 @@
 */
 
 #if defined(_WIN32)
-  // clang-format off
-  #include <windows.h>
-  #include <stringapiset.h>
-  // clang-format on
   #include "cpp-terminal/platforms/conversion.hpp"
 
   #include <vector>
+  #include <windows.h>
 #elif defined(__APPLE__) || defined(__wasm__) || defined(__wasm) || defined(__EMSCRIPTEN__)
   #include <cerrno>
   #include <csignal>
@@ -46,36 +43,36 @@ Term::Button::Action getAction(const std::int32_t& old_state, const std::int32_t
   else
     return Term::Button::Action::None;
 }
-void setButton(std::array<Term::Button, 11>& buttons, const std::int32_t& old_state, const std::int32_t& state, const std::int32_t& type)
+Term::Button setButton(const std::int32_t& old_state, const std::int32_t& state)
 {
   Term::Button::Action action;
   action = getAction(old_state, state, FROM_LEFT_1ST_BUTTON_PRESSED);
-  if(action == Term::Button::Action::Pressed && type == DOUBLE_CLICK) action = Term::Button::Action::DoubleClicked;
-  buttons[static_cast<std::size_t>(Term::Button::Type::Left)] = Term::Button(Term::Button::Type::Left, action);
+  if(action != Term::Button::Action::None) return Term::Button(Term::Button::Type::Left, action);
 
   action = getAction(old_state, state, FROM_LEFT_2ND_BUTTON_PRESSED);
-  if(action == Term::Button::Action::Pressed && type == DOUBLE_CLICK) action = Term::Button::Action::DoubleClicked;
-  buttons[static_cast<std::size_t>(Term::Button::Type::Button1)] = Term::Button(Term::Button::Type::Button1, action);
+  if(action != Term::Button::Action::None) return Term::Button(Term::Button::Type::Button1, action);
 
   action = getAction(old_state, state, FROM_LEFT_3RD_BUTTON_PRESSED);
-  if(action == Term::Button::Action::Pressed && type == DOUBLE_CLICK) action = Term::Button::Action::DoubleClicked;
-  buttons[static_cast<std::size_t>(Term::Button::Type::Button2)] = Term::Button(Term::Button::Type::Button2, action);
+  if(action != Term::Button::Action::None) return Term::Button(Term::Button::Type::Button2, action);
 
   action = getAction(old_state, state, FROM_LEFT_4TH_BUTTON_PRESSED);
-  if(action == Term::Button::Action::Pressed && type == DOUBLE_CLICK) action = Term::Button::Action::DoubleClicked;
-  buttons[static_cast<std::size_t>(Term::Button::Type::Button3)] = Term::Button(Term::Button::Type::Button3, action);
+  if(action != Term::Button::Action::None) return Term::Button(Term::Button::Type::Button3, action);
 
   action = getAction(old_state, state, RIGHTMOST_BUTTON_PRESSED);
-  if(action == Term::Button::Action::Pressed && type == DOUBLE_CLICK) action = Term::Button::Action::DoubleClicked;
-  buttons[static_cast<std::size_t>(Term::Button::Type::Right)] = Term::Button(Term::Button::Type::Right, action);
+  if(action != Term::Button::Action::None) return Term::Button(Term::Button::Type::Right, action);
 
-  buttons[static_cast<std::size_t>(Term::Button::Type::Wheel)]   = Term::Button(Term::Button::Type::Wheel, Term::Button::Action::None);
-  buttons[static_cast<std::size_t>(Term::Button::Type::Button4)] = Term::Button(Term::Button::Type::Button4, Term::Button::Action::None);
-  buttons[static_cast<std::size_t>(Term::Button::Type::Button5)] = Term::Button(Term::Button::Type::Button5, Term::Button::Action::None);
-  buttons[static_cast<std::size_t>(Term::Button::Type::Button6)] = Term::Button(Term::Button::Type::Button6, Term::Button::Action::None);
-  buttons[static_cast<std::size_t>(Term::Button::Type::Button7)] = Term::Button(Term::Button::Type::Button7, Term::Button::Action::None);
-  buttons[static_cast<std::size_t>(Term::Button::Type::Button8)] = Term::Button(Term::Button::Type::Button8, Term::Button::Action::None);
+  return Term::Button(Term::Button::Type::None, Term::Button::Action::None);
 }
+
+void sendString(Term::Private::BlockingQueue& events, std::wstring& str)
+{
+  if(!str.empty())
+  {
+    events.push(Term::Event(Term::Private::to_utf8(str.c_str())));
+    str.clear();
+  }
+}
+
 #endif
 
 std::thread Term::Private::Input::m_thread = std::thread(Term::Private::Input::read_event);
@@ -212,8 +209,8 @@ void Term::Private::Input::read_raw()
   DWORD                     read{0};
   std::vector<INPUT_RECORD> events{to_read};
   if(!ReadConsoleInputW(Private::in.handle(), &events[0], to_read, &read) || read != to_read) Term::Exception("ReadFile() failed");
-  std::string ret;
-  bool        need_windows_size{false};
+  std::wstring ret;
+  bool         need_windows_size{false};
   for(std::size_t i = 0; i != read; ++i)
   {
     switch(events[i].EventType)
@@ -222,106 +219,80 @@ void Term::Private::Input::read_raw()
       {
         if(events[i].Event.KeyEvent.bKeyDown)
         {
-          if(events[i].Event.KeyEvent.uChar.UnicodeChar == 0) { read_windows_key(events[i].Event.KeyEvent.wVirtualKeyCode, events[i].Event.KeyEvent.dwControlKeyState, events[i].Event.KeyEvent.wRepeatCount); }
+          if(events[i].Event.KeyEvent.uChar.UnicodeChar == 0) read_windows_key(events[i].Event.KeyEvent.wVirtualKeyCode, events[i].Event.KeyEvent.dwControlKeyState, events[i].Event.KeyEvent.wRepeatCount);
           else
-          {
-            if(events[i].Event.KeyEvent.uChar.UnicodeChar <= 127)  //MAYBE BUG in to_utf8 (me or Windaube)
-            {
-              if(events[i].Event.KeyEvent.uChar.UnicodeChar == Term::Key::Del) ret.append(events[i].Event.KeyEvent.wRepeatCount, static_cast<char>(Key(Term::Key::Value::Backspace)));
-              else
-                ret.append(events[i].Event.KeyEvent.wRepeatCount, static_cast<char>(events[i].Event.KeyEvent.uChar.UnicodeChar));
-            }
-            else
-              for(std::size_t j = 0; j != events[i].Event.KeyEvent.wRepeatCount; ++j) ret.append(to_utf8(&events[i].Event.KeyEvent.uChar.UnicodeChar));
-          }
-          break;
+            ret.append(events[i].Event.KeyEvent.wRepeatCount, events[i].Event.KeyEvent.uChar.UnicodeChar == Term::Key::Del ? static_cast<wchar_t>(Key(Term::Key::Value::Backspace)) : static_cast<wchar_t>(events[i].Event.KeyEvent.uChar.UnicodeChar));
         }
-        else
-          break;
+        break;
       }
       case FOCUS_EVENT:
       {
-        if(!ret.empty())
-        {
-          m_events.push(Term::Event(ret));
-          ret.clear();
-        }
+        sendString(m_events, ret);
         m_events.push(Event(Focus(static_cast<Term::Focus::Type>(events[i].Event.FocusEvent.bSetFocus))));
         break;
       }
       case MENU_EVENT:
       {
-        if(!ret.empty())
-        {
-          m_events.push(Term::Event(ret));
-          ret.clear();
-        }
+        sendString(m_events, ret);
         break;
       }
       case MOUSE_EVENT:
       {
-        if(!ret.empty())
-        {
-          m_events.push(Term::Event(ret));
-          ret.clear();
-        }
+        sendString(m_events, ret);
         static MOUSE_EVENT_RECORD old_state;
-        if(old_state.dwButtonState == events[i].Event.MouseEvent.dwButtonState && old_state.dwMousePosition.X == events[i].Event.MouseEvent.dwMousePosition.X && old_state.dwMousePosition.Y == events[i].Event.MouseEvent.dwMousePosition.Y && old_state.dwEventFlags == events[i].Event.MouseEvent.dwEventFlags) break;
-        std::int32_t                 state{static_cast<std::int32_t>(events[i].Event.MouseEvent.dwButtonState)};
-        std::array<Term::Button, 11> buttons;
+        if(events[i].Event.MouseEvent.dwEventFlags == MOUSE_WHEELED || events[i].Event.MouseEvent.dwEventFlags == MOUSE_HWHEELED)
+          ;
+        else if(old_state.dwButtonState == events[i].Event.MouseEvent.dwButtonState && old_state.dwMousePosition.X == events[i].Event.MouseEvent.dwMousePosition.X && old_state.dwMousePosition.Y == events[i].Event.MouseEvent.dwMousePosition.Y && old_state.dwEventFlags == events[i].Event.MouseEvent.dwEventFlags)
+          break;
+        std::int32_t state{static_cast<std::int32_t>(events[i].Event.MouseEvent.dwButtonState)};
         switch(events[i].Event.MouseEvent.dwEventFlags)
         {
           case 0:
           {
-            setButton(buttons, old_state.dwButtonState, state, 0);
+            m_events.push(Term::Mouse(setButton(static_cast<std::int32_t>(old_state.dwButtonState), state), static_cast<std::uint16_t>(events[i].Event.MouseEvent.dwMousePosition.Y), static_cast<std::uint16_t>(events[i].Event.MouseEvent.dwMousePosition.X)));
+            ;
             break;
           }
           case MOUSE_MOVED:
           {
-            setButton(buttons, old_state.dwButtonState, state, MOUSE_MOVED);
+            m_events.push(Term::Mouse(setButton(static_cast<std::int32_t>(old_state.dwButtonState), state), static_cast<std::uint16_t>(events[i].Event.MouseEvent.dwMousePosition.Y), static_cast<std::uint16_t>(events[i].Event.MouseEvent.dwMousePosition.X)));
+            ;
             break;
           }
           case DOUBLE_CLICK:
           {
-            setButton(buttons, old_state.dwButtonState, state, DOUBLE_CLICK);
+            m_events.push(Term::Mouse(Term::Button(setButton(static_cast<std::int32_t>(old_state.dwButtonState), state).type(), Term::Button::Action::DoubleClicked), static_cast<std::uint16_t>(events[i].Event.MouseEvent.dwMousePosition.Y), static_cast<std::uint16_t>(events[i].Event.MouseEvent.dwMousePosition.X)));
             break;
           }
           case MOUSE_WHEELED:
           {
-            setButton(buttons, old_state.dwButtonState, state, MOUSE_WHEELED);
-            if(state > 0) buttons[static_cast<std::size_t>(Term::Button::Type::Wheel)] = Button(Term::Button::Type::Wheel, Term::Button::Action::RolledUp);
+            if(state > 0) m_events.push(Term::Mouse(Button(Term::Button::Type::Wheel, Term::Button::Action::RolledUp), static_cast<std::uint16_t>(events[i].Event.MouseEvent.dwMousePosition.Y), static_cast<std::uint16_t>(events[i].Event.MouseEvent.dwMousePosition.X)));
             else
-              buttons[static_cast<std::size_t>(Term::Button::Type::Wheel)] = Button(Term::Button::Type::Wheel, Term::Button::Action::RolledDown);
+              m_events.push(Term::Mouse(Button(Term::Button::Type::Wheel, Term::Button::Action::RolledDown), static_cast<std::uint16_t>(events[i].Event.MouseEvent.dwMousePosition.Y), static_cast<std::uint16_t>(events[i].Event.MouseEvent.dwMousePosition.X)));
             break;
           }
           case MOUSE_HWHEELED:
           {
-            setButton(buttons, old_state.dwButtonState, state, MOUSE_HWHEELED);
-            if(state > 0) buttons[static_cast<std::size_t>(Term::Button::Type::Wheel)] = Button(Term::Button::Type::Wheel, Term::Button::Action::ToRight);
+            if(state > 0) m_events.push(Term::Mouse(Button(Term::Button::Type::Wheel, Term::Button::Action::ToRight), static_cast<std::uint16_t>(events[i].Event.MouseEvent.dwMousePosition.Y), static_cast<std::uint16_t>(events[i].Event.MouseEvent.dwMousePosition.X)));
             else
-              buttons[static_cast<std::size_t>(Term::Button::Type::Wheel)] = Button(Term::Button::Type::Wheel, Term::Button::Action::ToLeft);
+              m_events.push(Term::Mouse(Button(Term::Button::Type::Wheel, Term::Button::Action::ToLeft), static_cast<std::uint16_t>(events[i].Event.MouseEvent.dwMousePosition.Y), static_cast<std::uint16_t>(events[i].Event.MouseEvent.dwMousePosition.X)));
             break;
           }
           default: break;
         }
-        m_events.push(Term::Mouse(buttons, static_cast<std::uint16_t>(events[i].Event.MouseEvent.dwMousePosition.Y), static_cast<std::uint16_t>(events[i].Event.MouseEvent.dwMousePosition.X)));
         old_state = events[i].Event.MouseEvent;
         break;
       }
       case WINDOW_BUFFER_SIZE_EVENT:
       {
         need_windows_size = true;  // if we send directly it's too much generations
-        if(!ret.empty())
-        {
-          m_events.push(Term::Event(ret));
-          ret.clear();
-        }
+        sendString(m_events, ret);
         break;
       }
       default: break;
     }
   }
-  if(!ret.empty()) { m_events.push(Term::Event(ret.c_str())); }
+  sendString(m_events, ret);
   if(need_windows_size == true) { m_events.push(screen_size()); }
 #else
   Private::in.lockIO();
