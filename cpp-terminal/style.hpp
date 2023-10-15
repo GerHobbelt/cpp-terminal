@@ -1,6 +1,7 @@
 #pragma once
 
-#include <cpp-terminal/terminal.hpp>
+#include "cpp-terminal/iostream.hpp"
+
 #include <cstdint>
 #include <string>
 
@@ -73,15 +74,14 @@ enum class Style : std::uint8_t
 
   SUPERSCRIPT                 = 73,  // only implemented in mintty
   SUBSCRIPT                   = 74,  // only implemented in mintty
-  RESET_SUPERSCRIPT_SUBSCRIPT = 75,  // only implemented in mintty
+  RESET_SUPERSCRIPT_SUBSCRIPT = 75   // only implemented in mintty
 
 };
 
 std::string style(const Term::Style& style);
 
 template<class Stream> Stream& operator<<(Stream& stream, const Term::Style& s) { return stream << style(s); }
-
 // unabigify operator overload
-inline Term::Terminal& operator<<(Term::Terminal& terminal, const Term::Style& s) { return terminal << style(s); }
+inline Term::TOstream&         operator<<(Term::TOstream& terminal, const Term::Style& s) { return terminal << style(s); }
 
 }  // namespace Term

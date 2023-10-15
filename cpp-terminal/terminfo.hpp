@@ -22,16 +22,19 @@ public:
     // a 8bit color was used
     Bit8,
     // a 24bit (RGB) color was used
-    Bit24,
+    Bit24
   };
   Terminfo();
-  static ColorMode getColorMode() { return m_colorMode; }
-  bool             hasANSIEscapeCode();
+  static ColorMode getColorMode();
+  bool             hasANSIEscapeCode() const;
+  bool             isLegacy() const;
 
 private:
   void             setANSIEscapeCode();
-  bool             m_ANSIEscapeCode{true};
   void             setColorMode();
+  void             setLegacy();
+  bool             m_ANSIEscapeCode{true};
+  bool             m_legacy{false};
   static ColorMode m_colorMode;
   std::string      m_terminalName;
   std::string      m_terminalVersion;
