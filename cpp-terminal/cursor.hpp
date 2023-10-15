@@ -11,7 +11,7 @@ class Cursor
 {
 public:
   Cursor() = default;
-  Cursor(const std::uint16_t&, const std::uint16_t&);
+  Cursor(const std::size_t&, const std::size_t&);
   std::size_t row() const;
   std::size_t column() const;
   void        setRow(const std::size_t&);
@@ -19,9 +19,7 @@ public:
   bool        empty() const;
 
 private:
-  std::pair<std::uint16_t, std::uint16_t> m_position;
-  //std::size_t m_rows{0};
-  //std::size_t m_columns{0};
+  std::pair<std::size_t, std::size_t> m_position;
 };
 
 // returns the current cursor position (row, column) (Y, X)
