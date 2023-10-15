@@ -1,10 +1,19 @@
+/*
+* cpp-terminal
+* C++ library for writing multiplatform terminal applications.
+*
+* SPDX-FileCopyrightText: 2019-2023 cpp-terminal
+*
+* SPDX-License-Identifier: MIT
+*/
+
 #include "cpp-terminal/buffer.hpp"
 
 #include "cpp-terminal/options.hpp"
 #include "cpp-terminal/platforms/file.hpp"
 #include "cpp-terminal/terminal.hpp"
 
-static std::string remplace(const Term::Buffer::int_type& c)
+static std::string replace(const Term::Buffer::int_type& c)
 {
 #if defined(_WIN32)
   std::string ret;
@@ -107,12 +116,12 @@ Term::Buffer::int_type Term::Buffer::overflow(int c)
     {
       case Type::Unbuffered:
       {
-        Term::Private::out.write(remplace(c));
+        Term::Private::out.write(replace(c));
         break;
       }
       case Type::LineBuffered:
       {
-        m_buffer += remplace(c);
+        m_buffer += replace(c);
         if(static_cast<char>(c) == '\n')
         {
           Term::Private::out.write(m_buffer);
@@ -127,7 +136,7 @@ Term::Buffer::int_type Term::Buffer::overflow(int c)
           Term::Private::out.write(m_buffer);
           m_buffer.clear();
         }
-        m_buffer += remplace(c);
+        m_buffer += replace(c);
         break;
       }
     }
