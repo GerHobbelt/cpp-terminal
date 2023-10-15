@@ -41,13 +41,11 @@ private:
   void           setOptions();
   void           applyOptions();
   void           setRawMode();
-  void           attachConsole();
-  void           detachConsole();
   int            activateMouseEvents();
   int            desactivateMouseEvents();
   int            activateFocusEvents();
   int            desactivateFocusEvents();
-  bool           has_allocated_console{false};
+  void           set_unset_utf8();
   Term::Terminfo m_terminfo;
   Term::Options  m_options;
   std::uint8_t   m_badReturnCode{EXIT_FAILURE};

@@ -29,42 +29,66 @@
   #include <termios.h>
 #endif
 
-void Term::Terminal::store_and_restore()
+void Term::Terminal::set_unset_utf8()
 {
   static bool enabled{false};
-#ifdef _WIN32
-  static UINT  out_code_page{0};
-  static UINT  in_code_page{0};
-  static DWORD dwOriginalOutMode{0};
-  static DWORD dwOriginalInMode{0};
+#if defined(_WIN32)
+  static UINT out_code_page{0};
+  static UINT in_code_page{0};
   if(!enabled)
   {
     out_code_page = GetConsoleOutputCP();
     if(out_code_page == 0) throw Term::Exception("GetConsoleOutputCP() failed");
+    if(!SetConsoleOutputCP(CP_UTF8)) throw Term::Exception("SetConsoleOutputCP(CP_UTF8) failed");
     in_code_page = GetConsoleCP();
     if(out_code_page == 0) throw Term::Exception("GetConsoleCP() failed");
-    if(!SetConsoleOutputCP(CP_UTF8)) throw Term::Exception("SetConsoleOutputCP(CP_UTF8) failed");
     if(!SetConsoleCP(CP_UTF8)) throw Term::Exception("SetConsoleCP(CP_UTF8) failed");
+    enabled = true;
+  }
+  else
+  {
+    if(!SetConsoleOutputCP(out_code_page)) throw Term::Exception("SetConsoleOutputCP(out_code_page) failed");
+    if(!SetConsoleCP(in_code_page)) throw Term::Exception("SetConsoleCP(in_code_page) failed");
+  }
+#else
+  if(!enabled)
+  {
+    if(m_terminfo.getName() != "Apple_Terminal") Term::Private::out.write("\033%G");
+    enabled = true;
+  }
+  else
+  {
+    // Does not return the original charset but, the default defined by standard ISO 8859-1 (ISO 2022);
+    if(m_terminfo.getName() != "Apple_Terminal") Term::Private::out.write("\033%@");
+  }
+#endif
+}
 
-    if(!GetConsoleMode(Private::out.handle(), &dwOriginalOutMode)) { throw Term::Exception("GetConsoleMode() failed"); }
-    if(!GetConsoleMode(Private::in.handle(), &dwOriginalInMode)) { throw Term::Exception("GetConsoleMode() failed"); }
-    dwOriginalInMode |= (ENABLE_EXTENDED_FLAGS | activateFocusEvents() | ENABLE_MOUSE_INPUT);
-    dwOriginalInMode &= ~ENABLE_QUICK_EDIT_MODE;
+void Term::Terminal::store_and_restore()
+{
+  static bool enabled{false};
+#ifdef _WIN32
+  static DWORD dwOriginalOutMode{0};
+  static DWORD dwOriginalInMode{0};
+  if(!enabled)
+  {
+    if(GetConsoleMode(Private::out.handle(), &dwOriginalOutMode) == 0) { throw Term::Exception("GetConsoleMode() failed"); }
+    if(GetConsoleMode(Private::in.handle(), &dwOriginalInMode) == 0) { throw Term::Exception("GetConsoleMode() failed"); }
+    DWORD in{(dwOriginalInMode & ~ENABLE_QUICK_EDIT_MODE) | (ENABLE_EXTENDED_FLAGS | activateFocusEvents() | activateMouseEvents())};
+    DWORD out{dwOriginalOutMode};
     if(!m_terminfo.isLegacy())
     {
-      dwOriginalOutMode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING | DISABLE_NEWLINE_AUTO_RETURN;
-      dwOriginalInMode |= ENABLE_VIRTUAL_TERMINAL_INPUT;
+      out |= ENABLE_VIRTUAL_TERMINAL_PROCESSING | DISABLE_NEWLINE_AUTO_RETURN;
+      in |= ENABLE_VIRTUAL_TERMINAL_INPUT;
     }
-    if(!SetConsoleMode(Private::out.handle(), dwOriginalOutMode)) { throw Term::Exception("SetConsoleMode() failed in destructor"); }
-    if(!SetConsoleMode(Private::in.handle(), dwOriginalInMode)) { throw Term::Exception("SetConsoleMode() failed"); }
+    if(!SetConsoleMode(Private::out.handle(), out)) { throw Term::Exception("SetConsoleMode() failed in destructor"); }
+    if(!SetConsoleMode(Private::in.handle(), in)) { throw Term::Exception("SetConsoleMode() failed"); }
     enabled = true;
   }
   else
   {
     if(!SetConsoleMode(Private::out.handle(), dwOriginalOutMode)) { throw Term::Exception("SetConsoleMode() failed in destructor"); }
     if(!SetConsoleMode(Private::in.handle(), dwOriginalInMode)) { throw Term::Exception("SetConsoleMode() failed in destructor"); }
-    if(!SetConsoleOutputCP(out_code_page)) throw Term::Exception("SetConsoleOutputCP(out_code_page) failed");
-    if(!SetConsoleCP(in_code_page)) throw Term::Exception("SetConsoleCP(in_code_page) failed");
     enabled = false;
   }
 #else
@@ -73,6 +97,13 @@ void Term::Terminal::store_and_restore()
   {
     if(!Private::out.null())
       if(tcgetattr(Private::out.fd(), &orig_termios) == -1) { throw Term::Exception("tcgetattr() failed"); }
+    termios term = orig_termios;
+    term.c_cflag &= ~PARENB;  // Clear parity bit, disabling parity (most common)
+    term.c_cflag &= ~CSTOPB;  // Clear stop field, only one stop bit used in communication (most common)
+    term.c_cflag &= ~CSIZE;   // Clear all the size bits, then use one of the statements below
+    term.c_cflag |= CS8;      // 8 bits per byte (most common)
+    if(!Private::out.null())
+      if(tcsetattr(Private::out.fd(), TCSAFLUSH, &term) == -1) { throw Term::Exception("tcsetattr() failed in destructor"); }
     enabled = true;
   }
   else
@@ -87,7 +118,7 @@ void Term::Terminal::store_and_restore()
 int Term::Terminal::activateMouseEvents()
 {
 #if defined(_WIN32)
-  return 0;  //FIXME
+  return ENABLE_MOUSE_INPUT;
 #else
   return Term::Private::out.write("\033[?1002h\033[?1003h\033[?1006h");
 #endif
@@ -96,7 +127,7 @@ int Term::Terminal::activateMouseEvents()
 int Term::Terminal::desactivateMouseEvents()
 {
 #if defined(_WIN32)
-  return 0;  //FIXME
+  return ENABLE_MOUSE_INPUT;
 #else
   return Term::Private::out.write("\033[?1003l\033[?1006l");
 #endif
@@ -135,8 +166,8 @@ void Term::Terminal::setBadStateReturnCode()
 
 void Term::Terminal::setRawMode()
 {
-#ifdef _WIN32
-  DWORD flags = {0};
+#if defined(_WIN32)
+  DWORD flags{0};
   if(!GetConsoleMode(Private::in.handle(), &flags)) { throw Term::Exception("GetConsoleMode() failed"); }
   if(m_options.has(Option::NoSignalKeys)) { flags &= ~ENABLE_PROCESSED_INPUT; }
   flags &= ~(ENABLE_LINE_INPUT | ENABLE_ECHO_INPUT);
@@ -152,48 +183,11 @@ void Term::Terminal::setRawMode()
     // keep it enabled, so that in C++, one can still just use std::endl
     // for EOL instead of "\r\n".
     // raw.c_oflag &= ~(OPOST);
-    raw.c_cflag |= CS8;
     raw.c_lflag &= ~(ECHO | ICANON | IEXTEN);
     if(m_options.has(Option::NoSignalKeys)) { raw.c_lflag &= ~ISIG; }
     raw.c_cc[VMIN]  = 1;
     raw.c_cc[VTIME] = 0;
     if(tcsetattr(Private::out.fd(), TCSAFLUSH, &raw) == -1) { throw Term::Exception("tcsetattr() failed"); }
   }
-#endif
-}
-
-void Term::Terminal::attachConsole()
-{
-#ifdef _WIN32
-  FILE* dump{nullptr};
-  if(!AttachConsole(ATTACH_PARENT_PROCESS))
-  {
-    if(AllocConsole())
-    {
-      AttachConsole(GetCurrentProcessId());
-      freopen_s(&dump, "CONOUT$", "w", stdout);
-      freopen_s(&dump, "CONOUT$", "w", stderr);
-      freopen_s(&dump, "CONIN$", "r", stdin);
-      has_allocated_console = true;
-    }
-  }
-  else
-  {
-    if(_fileno(stdout) < 0 || _get_osfhandle(_fileno(stdout)) < 0) freopen_s(&dump, "CONOUT$", "w", stdout);
-    if(_fileno(stderr) < 0 || _get_osfhandle(_fileno(stderr)) < 0) freopen_s(&dump, "CONOUT$", "w", stderr);
-    if(_fileno(stdin) < 0 || _get_osfhandle(_fileno(stdin)) < 0) freopen_s(&dump, "CONIN$", "r", stdin);
-  }
-#endif
-  setvbuf(stdin, nullptr, _IOLBF, 4096);
-  setvbuf(stdout, nullptr, _IOLBF, 4096);
-  setvbuf(stderr, nullptr, _IOLBF, 4096);
-  Term::Private::m_fileInitializer.init();
-}
-
-void Term::Terminal::detachConsole()
-{
-#ifdef _WIN32
-  if(has_allocated_console) FreeConsole();
-#else
 #endif
 }
