@@ -12,6 +12,12 @@
 #include "cpp-terminal/prompt.hpp"
 #include "cpp-terminal/version.hpp"
 
+#include "monolithic_examples.h"
+
+#if defined(BUILD_MONOLITHIC)
+#define main			cppterminal_prompt_immediate_example_main
+#endif
+
 int main()
 {
   Term::cout << "Running cpp-terminal version: " << Term::Version << std::endl;

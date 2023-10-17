@@ -12,9 +12,16 @@
 #include <cpp-terminal/terminal.hpp>
 #include <iostream>
 
+#include "monolithic_examples.h"
+
+#if defined(BUILD_MONOLITHIC)
+#define main			cppterminal_utf8_example_main
+#endif
+
 int main()
 {
-  if(Term::terminal.supportUTF8()) std::cout << Term::color_fg(Term::Color::Name::Green) << "Your terminal support utf8 !\n\n" << Term::color_fg(Term::Color::Name::Default) << std::endl;
+  if (Term::terminal.supportUTF8()) 
+	std::cout << Term::color_fg(Term::Color::Name::Green) << "Your terminal support utf8 !\n\n" << Term::color_fg(Term::Color::Name::Default) << std::endl;
   else
     std::cout << Term::color_fg(Term::Color::Name::Red) << "Your terminal does NOT support utf8 !\n\n" << Term::color_fg(Term::Color::Name::Default) << std::endl;
   // clang-format off
@@ -248,4 +255,5 @@ int main()
   << "╚══╩══╝  └──┴──┘  ╰──┴──╯  ╰──┴──╯  ┗━━┻━━┛  ▗▄▖▛▀▜   └╌╌┘ ╎ ┗╍╍┛ ┋  ▁▂▃▄▅▆▇█\n"
   << "                                             ▝▀▘▙▄▟\n"<<std::flush;
   // clang-format on
+  return 0;
 }

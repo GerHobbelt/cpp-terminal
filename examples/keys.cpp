@@ -18,6 +18,12 @@
 #include "cpp-terminal/tty.hpp"
 #include "cpp-terminal/version.hpp"
 
+#include "monolithic_examples.h"
+
+#if defined(BUILD_MONOLITHIC)
+#define main			cppterminal_keys_example_main
+#endif
+
 int main()
 {
   try

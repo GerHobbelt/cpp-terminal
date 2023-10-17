@@ -51,6 +51,14 @@ std::string render(Term::Window& scr, const std::size_t& rows, const std::size_t
   return scr.render(1, 1, false);
 }
 
+
+
+#include "monolithic_examples.h"
+
+#if defined(BUILD_MONOLITHIC)
+#define main			cppterminal_menu_window_example_main
+#endif
+
 int main()
 {
   try

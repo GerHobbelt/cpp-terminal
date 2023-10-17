@@ -20,6 +20,12 @@
 #include <cpp-terminal/key.hpp>
 #include <thread>
 
+#include "monolithic_examples.h"
+
+#if defined(BUILD_MONOLITHIC)
+#define main			cppterminal_slow_events_example_main
+#endif
+
 // Same than event but add 1s to slow down the event processing.
 int main()
 {

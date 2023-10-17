@@ -13,6 +13,12 @@
 
 #include <iostream>
 
+#include "monolithic_examples.h"
+
+#if defined(BUILD_MONOLITHIC)
+#define main			cppterminal_prompt_not_immediate_example_main
+#endif
+
 int main()
 {
   std::cout << "Running cpp-terminal version: " << Term::Version << std::endl;

@@ -96,6 +96,14 @@ void render(const std::size_t& rows, const std::size_t& cols, const std::size_t&
   Term::cout << scr << std::flush;
 }
 
+
+
+#include "monolithic_examples.h"
+
+#if defined(BUILD_MONOLITHIC)
+#define main			cppterminal_menu_example_main
+#endif
+
 int main()
 {
   try

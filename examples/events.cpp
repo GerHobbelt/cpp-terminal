@@ -19,6 +19,8 @@
 #include <chrono>
 #include <thread>
 
+namespace {
+
 class Loop
 {
 public:
@@ -35,6 +37,14 @@ public:
 private:
   bool m_stop{false};
 };
+
+}
+
+#include "monolithic_examples.h"
+
+#if defined(BUILD_MONOLITHIC)
+#define main			cppterminal_events_example_main
+#endif
 
 int main()
 {
@@ -208,5 +218,7 @@ int main()
   catch(...)
   {
     Term::cerr << "There was an exception!" << std::endl;
+	return 1;
   }
+  return 0;
 }

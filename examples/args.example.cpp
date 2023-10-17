@@ -11,7 +11,13 @@
 
 #include <iostream>
 
-int main()
+#include "monolithic_examples.h"
+
+#if defined(BUILD_MONOLITHIC)
+#define main			cppterminal_args_example_main
+#endif
+
+int main(void)
 {
   std::cout << "argc : " << Term::argc << std::endl;
   for(std::size_t i = 0; i != Term::argc; ++i) { std::cout << "argv[" << i << "] : *" << Term::argv[i] << "*" << std::endl; }

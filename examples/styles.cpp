@@ -12,6 +12,12 @@
 #include <cpp-terminal/color.hpp>
 #include <cpp-terminal/style.hpp>
 
+#include "monolithic_examples.h"
+
+#if defined(BUILD_MONOLITHIC)
+#define main			cppterminal_styles_example_main
+#endif
+
 int main()
 {
   Term::cout << "Normal Text " << Term::Style::BOLD << "BOLD" << Term::Style::RESET_BOLD_DIM << std::endl;
@@ -53,4 +59,5 @@ int main()
   Term::cout << "Normal Text " << Term::Style::SUBSCRIPT << "SUBSCRIPT" << Term::Style::RESET_SUPERSCRIPT_SUBSCRIPT << std::endl;
   int i{0};
   Term::cin >> i;
+  return 0;
 }

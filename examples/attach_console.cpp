@@ -18,7 +18,13 @@
 
 #include <iostream>
 
-#ifdef _WIN32
+#include "monolithic_examples.h"
+
+#if defined(BUILD_MONOLITHIC)
+#define main			cppterminal_attach_console_example_main
+#endif
+
+#if defined(_WIN32) && !defined(BUILD_MONOLITHIC)
 int __stdcall WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 #else
 int main()
@@ -126,7 +132,7 @@ int main()
               << Term::color_bg(Term::Color(Term::Color::Name::BrightWhite).to3bits()) << " " << Term::color_bg(Term::Color::Name::Default) << " "
               << "*\n";
 
-#ifdef _WIN32
+#if defined(_WIN32)
     MessageBoxA(NULL, "Hello, world", "caption", 0);
 #endif
   }

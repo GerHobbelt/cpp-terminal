@@ -25,6 +25,14 @@ bool determine_completeness(CPP_TERMINAL_MAYBE_UNUSED const std::string& command
     return true;
 }
 
+
+
+#include "monolithic_examples.h"
+
+#if defined(BUILD_MONOLITHIC)
+#define main			cppterminal_prompt_multiline_example_main
+#endif
+
 int main()
 {
   try
