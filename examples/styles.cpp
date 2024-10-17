@@ -18,7 +18,7 @@
 #define main			cppterminal_styles_example_main
 #endif
 
-int main()
+int main(void)
 {
   Term::cout << "Normal Text " << Term::Style::BOLD << "BOLD" << Term::Style::RESET_BOLD_DIM << std::endl;
   Term::cout << "Normal Text " << Term::Style::DIM << "DIM" << Term::Style::RESET_BOLD_DIM << std::endl;

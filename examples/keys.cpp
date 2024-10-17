@@ -24,7 +24,7 @@
 #define main			cppterminal_keys_example_main
 #endif
 
-int main()
+int main(void)
 {
   try
   {

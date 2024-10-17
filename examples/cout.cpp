@@ -18,7 +18,7 @@
 #define main			cppterminal_cout_example_main
 #endif
 
-int main()
+int main(void)
 {
   Term::terminal.setOptions(Term::Option::Raw);
   std::cout << "This is printed with std::cout with std::end (1)" << std::endl;

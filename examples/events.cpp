@@ -46,7 +46,7 @@ private:
 #define main			cppterminal_events_example_main
 #endif
 
-int main()
+int main(void)
 {
   try
   {

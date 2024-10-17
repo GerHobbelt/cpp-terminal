@@ -19,7 +19,7 @@
 #define main			cppterminal_prompt_not_immediate_example_main
 #endif
 
-int main()
+int main(void)
 {
   std::cout << "Running cpp-terminal version: " << Term::Version << std::endl;
   try

@@ -18,7 +18,7 @@
 #define main			cppterminal_cin_cooked_example_main
 #endif
 
-int main()
+int main(void)
 {
   Term::terminal.setOptions(Term::Option::Cooked);
   std::cout << "Now type a number and then a string !" << std::endl;

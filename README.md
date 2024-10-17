@@ -20,7 +20,7 @@ To write a simple Hello World program, all you need to do is:
 
 #include <iostream>
 
-int main()
+int main(void)
 {
   std::cout << "\033[31mHello world !\033[0m" << std::endl;
   return 0;
@@ -35,7 +35,7 @@ or
 
 #include <iostream>
 
-int main()
+int main(void)
 {
   std::cout << Term::color_fg(Term::Color::Name::Red)<<"Hello world !"<<color_fg(Term::Color::Name::Default)<< std::endl;
   return 0;

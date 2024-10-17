@@ -27,7 +27,7 @@
 #endif
 
 // Same than event but add 1s to slow down the event processing.
-int main()
+int main(void)
 {
   try
   {

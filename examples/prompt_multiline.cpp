@@ -33,7 +33,7 @@ bool determine_completeness(CPP_TERMINAL_MAYBE_UNUSED const std::string& command
 #define main			cppterminal_prompt_multiline_example_main
 #endif
 
-int main()
+int main(void)
 {
   try
   {

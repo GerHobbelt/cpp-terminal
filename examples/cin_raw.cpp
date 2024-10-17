@@ -20,7 +20,7 @@
 #define main			cppterminal_cin_raw_example_main
 #endif
 
-int main()
+int main(void)
 {
   Term::terminal.setOptions(Term::Option::Raw);
   std::cout << "Now type a number and then a string !" << std::endl;

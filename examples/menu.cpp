@@ -104,7 +104,7 @@ void render(const std::size_t& rows, const std::size_t& cols, const std::size_t&
 #define main			cppterminal_menu_example_main
 #endif
 
-int main()
+int main(void)
 {
   try
   {

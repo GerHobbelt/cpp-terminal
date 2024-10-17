@@ -59,7 +59,7 @@ std::string render(Term::Window& scr, const std::size_t& rows, const std::size_t
 #define main			cppterminal_menu_window_example_main
 #endif
 
-int main()
+int main(void)
 {
   try
   {

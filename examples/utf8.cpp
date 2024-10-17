@@ -18,7 +18,7 @@
 #define main			cppterminal_utf8_example_main
 #endif
 
-int main()
+int main(void)
 {
   if (Term::terminal.supportUTF8()) 
 	std::cout << Term::color_fg(Term::Color::Name::Green) << "Your terminal support utf8 !\n\n" << Term::color_fg(Term::Color::Name::Default) << std::endl;

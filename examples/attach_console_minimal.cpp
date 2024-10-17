@@ -25,7 +25,7 @@
 #if defined(_WIN32) && !defined(BUILD_MONOLITHIC)
 int __stdcall WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 #else
-int main()
+int main(void)
 #endif
 {
   std::cout << Term::color_fg(Term::Color::Name::Red) << "Hello world !" << color_fg(Term::Color::Name::Default) << std::endl;

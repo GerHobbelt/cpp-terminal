@@ -27,7 +27,7 @@
 #if defined(_WIN32) && !defined(BUILD_MONOLITHIC)
 int __stdcall WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 #else
-int main()
+int main(void)
 #endif
 {
   std::cout << "Running cpp-terminal version: " << Term::Version << " website : " << Term::Homepage << std::endl << std::endl;

@@ -18,7 +18,7 @@
 #define main			cppterminal_prompt_simple_example_main
 #endif
 
-int main()
+int main(void)
 {
   Term::cout << "Running cpp-terminal version: " << Term::Version << std::endl;
   try

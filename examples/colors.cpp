@@ -20,7 +20,7 @@
 #define main			cppterminal_colors_example_main
 #endif
 
-int main()
+int main(void)
 {
   Term::cout << "Running cpp-terminal version: " << Term::Version << " website : " << Term::Homepage << std::endl << std::endl;
 
