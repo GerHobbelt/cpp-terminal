@@ -11,6 +11,8 @@
 #include "cpp-terminal/options.hpp"
 #include "cpp-terminal/terminfo.hpp"
 
+#include <cstdint>
+
 namespace Term
 {
 
@@ -18,18 +20,16 @@ class Terminal
 {
 private:
   void           store_and_restore();
-  void           setBadStateReturnCode();
   void           setOptions();
   void           applyOptions();
-  void           setRawMode();
-  int            activateMouseEvents();
-  int            desactivateMouseEvents();
-  int            activateFocusEvents();
-  int            desactivateFocusEvents();
+  void           setMode();
+  std::int16_t   setMouseEvents();
+  std::int16_t   unsetMouseEvents();
+  std::int16_t   setFocusEvents();
+  std::int16_t   unsetFocusEvents();
   void           set_unset_utf8();
   Term::Terminfo m_terminfo;
   Term::Options  m_options;
-  std::uint8_t   m_badReturnCode{EXIT_FAILURE};
 
 public:
   Terminal();

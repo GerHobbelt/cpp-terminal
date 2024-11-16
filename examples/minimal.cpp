@@ -9,6 +9,7 @@
 
 #include "cpp-terminal/terminal.hpp"
 
+#include <cstdio>
 #include <iostream>
 
 #include "monolithic_examples.h"

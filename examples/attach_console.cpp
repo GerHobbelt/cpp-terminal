@@ -30,7 +30,6 @@ int __stdcall WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 int main(void)
 #endif
 {
-  std::cout << "Running cpp-terminal version: " << Term::Version::string << " website : " << Term::homepage << std::endl << std::endl;
   try
   {
     std::string mode;

@@ -9,6 +9,9 @@
 
 #include "cpp-terminal/iostream.hpp"
 
+#include "cpp-terminal/buffer.hpp"
+#include "cpp-terminal/tty.hpp"
+
 #include <iostream>
 #include <new>
 
@@ -37,7 +40,7 @@ void Term::StreamInitializer::init()
     new(&Term::clog) TOstream(Term::Buffer::Type::LineBuffered, BUFSIZ);
     new(&Term::cerr) TOstream(Term::Buffer::Type::Unbuffered, 0);
     new(&Term::cin) TIstream(Term::Buffer::Type::FullBuffered, BUFSIZ);
-    std::cin.rdbuf(Term::cin.rdbuf());
+    if(is_stdin_a_tty()) std::cin.rdbuf(Term::cin.rdbuf());
   }
 }
 
