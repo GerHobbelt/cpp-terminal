@@ -2,7 +2,7 @@
 * cpp-terminal
 * C++ library for writing multi-platform terminal applications.
 *
-* SPDX-FileCopyrightText: 2019-2023 cpp-terminal
+* SPDX-FileCopyrightText: 2019-2024 cpp-terminal
 *
 * SPDX-License-Identifier: MIT
 */
@@ -157,7 +157,7 @@ std::size_t Term::Terminal::unsetFocusEvents()
 #endif
 }
 
-void Term::Terminal::setMode()
+void Term::Terminal::setMode() const
 {
   static bool activated{false};
 #if defined(_WIN32)

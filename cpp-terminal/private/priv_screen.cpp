@@ -2,7 +2,7 @@
 * cpp-terminal
 * C++ library for writing multi-platform terminal applications.
 *
-* SPDX-FileCopyrightText: 2019-2023 cpp-terminal
+* SPDX-FileCopyrightText: 2019-2024 cpp-terminal
 *
 * SPDX-License-Identifier: MIT
 */
@@ -25,10 +25,7 @@ Term::Screen Term::screen_size()
   return Term::Screen();
 #else
   Term::Screen   ret;
-  struct winsize window
-  {
-    0, 0, 0, 0
-  };
+  struct winsize window{0, 0, 0, 0};
   if(ioctl(Private::out.fd(), TIOCGWINSZ, &window) != -1) ret = {window.ws_row, window.ws_col};
   return ret;
 #endif

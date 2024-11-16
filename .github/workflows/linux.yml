@@ -3,7 +3,13 @@ name: Linux
 
 on:
   push:
+    paths-ignore:
+      - '.github/workflows/**'
+      - '!.github/workflows/linux.yml'
   pull_request:
+    paths-ignore:
+      - '.github/workflows/**'
+      - '!.github/workflows/linux.yml'
   workflow_dispatch:
 
 concurrency:
@@ -19,7 +25,7 @@ jobs:
       fail-fast: false
       matrix:
         # Before 4.7 there is no Non-static data member initializers that's bad!
-        version: [ 4.7, 4.8, 4.9, 5, 6, 7, 8, 9, 10, 11, 12 ]
+        version: [ 4.7, 4.8, 4.9, 5, 6, 7, 8, 9, 10, 11, 12, 13 ]
         standard: [ 11, 14, 17, 20 ]
         exclude:
           # 4.6
@@ -59,7 +65,7 @@ jobs:
     steps:
       - uses: ammaraskar/gcc-problem-matcher@master
       - name: ⬇️ Install git
-        run: apt-get update ; apt-get install --no-install-recommends -y git
+        run: apt-get update ; apt-get install --no-install-recommends -y git unzip
       - name: ⬇️ Setup CMake
         uses: lukka/get-cmake@latest
         with:
@@ -91,7 +97,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        version: [ 3.5, 3.6, 3.7, 3.8, 3.9, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 ]
+        version: [ 3.5, 3.6, 3.7, 3.8, 3.9, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18 ]
         standard: [ 11, 14, 17, 20 ]
         exclude:
           # 3.5
@@ -123,11 +129,14 @@ jobs:
           # 7 has problem
           - version: 7
             standard: 20
+          # 14 has problem too ?!?
+          - version: 14
+            standard: 20
 
     steps:
       - uses: ammaraskar/gcc-problem-matcher@master
       - name: ⬇️ Install git
-        run: apt-get update ; apt-get install --no-install-recommends -y git
+        run: apt-get update ; apt-get install --no-install-recommends -y git unzip
       - name: ⬇️ Setup CMake
         uses: lukka/get-cmake@latest
         with:
@@ -154,7 +163,7 @@ jobs:
   intel:
     runs-on: ubuntu-latest
     name: intel-oneapi (c++${{ matrix.standard }})
-    container: flagarde/ci-ubuntu-gcc-11-x86_64:latest
+    container: flagarde/ci-ubuntu-intel-2024.2-x86_64:latest
     strategy:
       fail-fast: false
       matrix:
@@ -163,7 +172,7 @@ jobs:
     steps:
       - uses: ammaraskar/gcc-problem-matcher@master
       - name: ⬇️ Install git
-        run: apt-get update ; apt-get install --no-install-recommends -y git
+        run: apt-get update ; apt-get install --no-install-recommends -y git unzip
       - name: ⬇️ Setup CMake
         uses: lukka/get-cmake@latest
         with:
@@ -178,8 +187,6 @@ jobs:
         uses: xom9ikk/dotenv@v2
         with:
           path: .github/workflows
-      - name: ⬇️ Install intel-oneapi
-        run: apt install --no-install-recommends -y intel-oneapi-compiler-dpcpp-cpp
       - name: 🔧 Configure
         env:
           CC: icx

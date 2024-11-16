@@ -2,7 +2,7 @@
 * cpp-terminal
 * C++ library for writing multi-platform terminal applications.
 *
-* SPDX-FileCopyrightText: 2019-2023 cpp-terminal
+* SPDX-FileCopyrightText: 2019-2024 cpp-terminal
 *
 * SPDX-License-Identifier: MIT
 */
@@ -32,4 +32,4 @@ void Term::Options::clean()
   m_Options = cleaned;
 }
 
-bool Term::Options::has(const Option& option) { return std::find(m_Options.begin(), m_Options.end(), option) != m_Options.end(); }
+bool Term::Options::has(const Option& option) const noexcept { return std::find(m_Options.begin(), m_Options.end(), option) != m_Options.end(); }
