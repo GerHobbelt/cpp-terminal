@@ -7,7 +7,9 @@
 * SPDX-License-Identifier: MIT
 */
 
-#define DOCTEST_CONFIG_IMPLEMENT
+#if !defined(BUILD_MONOLITHIC)
+  #define DOCTEST_CONFIG_IMPLEMENT
+#endif
 #include <cpp-terminal/args.hpp>
 #include <doctest/doctest.h>
 #include <iostream>
@@ -21,13 +23,13 @@ using char_type = wchar_t;
 using char_type = char;
   #endif
 
-int         argc2;
-char_type** argv2;
+static int         argc2;
+static const char_type** argv2;
 
   #if defined(_WIN32)
 
     #include <windows.h>
-std::string to_utf8(LPCWCH utf16Str)
+static std::string to_utf8(LPCWCH utf16Str)
 {
   int         size_needed = WideCharToMultiByte(CP_UTF8, 0, utf16Str, -1, nullptr, 0, nullptr, nullptr);
   std::string ret(size_needed, '\0');
@@ -35,13 +37,13 @@ std::string to_utf8(LPCWCH utf16Str)
   return ret.c_str();
 }
   #else
-std::string to_utf8(const std::string& ret) { return ret; }
+static std::string to_utf8(const std::string& ret) { return ret; }
   #endif
 
   #if defined(_WIN32)
-int wmain(int argc, char_type** argv)
+int wmain(int argc, const char_type** argv)
   #else
-int main(int argc, char_type** argv)
+int main(int argc, const char_type** argv)
   #endif
 {
   argc2 = argc;

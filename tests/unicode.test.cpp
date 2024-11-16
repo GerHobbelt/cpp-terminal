@@ -8,7 +8,9 @@
 */
 
 #include "cpp-terminal/exception.hpp"
+#if !defined(BUILD_MONOLITHIC)
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
+#endif
 #include "cpp-terminal/private/unicode.hpp"
 #include "doctest/doctest.h"
 

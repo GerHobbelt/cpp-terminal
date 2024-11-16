@@ -7,7 +7,9 @@
 * SPDX-License-Identifier: MIT
 */
 
-#define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
+#if !defined(BUILD_MONOLITHIC)
+  #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
+#endif
 #define DOCTEST_CONFIG_USE_STD_HEADERS
 #include "cpp-terminal/private/exception.hpp"
 

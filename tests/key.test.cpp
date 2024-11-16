@@ -8,7 +8,10 @@
 */
 
 #include <cctype>
-#define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
+#include <iostream>
+#if !defined(BUILD_MONOLITHIC)
+  #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
+#endif
 #include "cpp-terminal/key.hpp"
 #include "doctest/doctest.h"
 
