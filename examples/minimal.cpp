@@ -9,7 +9,6 @@
 
 #include "cpp-terminal/terminal.hpp"
 
-#include <cstdio>
 #include <iostream>
 
 #include "monolithic_examples.h"
@@ -21,7 +20,7 @@
 int main(void)
 {
   std::cout << "Just including terminal.hpp activate \033[31mcolor\033[0m !" << std::endl;
-  int i{0};
-  std::cin >> i;
+  int val{0};
+  std::cin >> val;
   return 0;
 }

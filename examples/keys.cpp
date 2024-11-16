@@ -30,7 +30,7 @@ int main(void)
   {
     // check if the terminal is capable of handling input
     Term::terminal.setOptions(Term::Option::NoClearScreen, Term::Option::NoSignalKeys, Term::Option::Cursor, Term::Option::Raw);
-    if(!Term::is_stdin_a_tty()) throw Term::Exception("The terminal is not attached to a TTY and therefore can't catch user input. Exiting...");
+    if(!Term::is_stdin_a_tty()) { throw Term::Exception("The terminal is not attached to a TTY and therefore can't catch user input. Exiting..."); }
     Term::Cursor cursor{Term::cursor_position()};
     Term::cout << "Cursor position : " << cursor.row() << " " << cursor.column() << std::endl;
 
@@ -46,9 +46,8 @@ int main(void)
         case Term::Event::Type::Key:
         {
           Term::Key key(event);
-          if(key == Term::Key::q) quit++;
-          else
-            quit = 0;
+          if(key == Term::Key::q) { quit++; }
+          else { quit = 0; }
           Term::cout << "Key: " << key.name() << " (" << static_cast<std::int32_t>(key) << ")" << std::endl;
           break;
         }
@@ -58,7 +57,7 @@ int main(void)
           if(!key_str.empty() && key_str[0] == '\033')
           {
             Term::cout << "You discovered a key combination not yet managed by cpp-terminal (";
-            for(std::size_t i = 0; i != key_str.size(); ++i) Term::cout << static_cast<std::int32_t>(key_str[i]) << " ";
+            for(std::size_t i = 0; i != key_str.size(); ++i) { Term::cout << static_cast<std::int32_t>(key_str[i]) << " "; }
             Term::cout << ").\nPlease report key combination pressed to " << Term::homepage << std::endl;
           }
         }

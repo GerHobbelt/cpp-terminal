@@ -50,10 +50,9 @@ int main(void)
         case Term::Event::Type::Key:
         {
           Term::Key keyEvent = event;
-          if(keyEvent.iscntrl()) Term::cout << "Event: Key (control key)" << std::endl;
-          else
-            Term::cout << "Event: Key (" << keyEvent.str() << ")" << std::endl;
-          if(keyEvent == Term::Key::Ctrl_Q) main_loop_continue = false;
+          if(keyEvent.iscntrl()) { Term::cout << "Event: Key (control key)" << std::endl; }
+          else { Term::cout << "Event: Key (" << keyEvent.str() << ")" << std::endl; }
+          if(keyEvent == Term::Key::Ctrl_Q) { main_loop_continue = false; }
           break;
         }
         case Term::Event::Type::Screen:
