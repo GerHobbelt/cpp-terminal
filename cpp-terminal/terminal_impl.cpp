@@ -44,13 +44,15 @@ void Term::Terminal::clean()
 }
 
 Term::Terminal::~Terminal() noexcept
-try
 {
-  clean();
-}
-catch(...)
-{
-  ExceptionHandler(Private::ExceptionDestination::StdErr);
+  try
+  {
+    clean();
+  }
+  catch(...)
+  {
+    ExceptionHandler(Private::ExceptionDestination::StdErr);
+  }
 }
 
 void Term::Terminal::applyOptions() const
