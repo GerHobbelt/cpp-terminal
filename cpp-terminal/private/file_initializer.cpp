@@ -56,74 +56,82 @@ catch(...)
 }
 
 void Term::Private::FileInitializer::detachConsole() noexcept
-try
 {
+  try
+  {
 #if defined(_WIN32)
-  if(m_consoleCreated) { Term::Private::WindowsError().check_if(0 == FreeConsole()).throw_exception("FreeConsole()"); }
+    if(m_consoleCreated) { Term::Private::WindowsError().check_if(0 == FreeConsole()).throw_exception("FreeConsole()"); }
 #endif
-}
-catch(...)
-{
-  ExceptionHandler(ExceptionDestination::MessageBox);
+  }
+  catch(...)
+  {
+    ExceptionHandler(ExceptionDestination::MessageBox);
+  }
 }
 
 Term::Private::FileInitializer::FileInitializer() noexcept
-try
 {
-  // MacOS was not happy wish a static mutex in the class so we create it and pass to each class;
-  static std::recursive_mutex ioMutex;
-  if(0 == m_counter)
+  try
   {
-    attachConsole();
-    openStandardStreams();
-    if(nullptr == new(&Term::Private::in) InputFileHandler(ioMutex)) { throw Term::Exception("new(&Term::Private::in) InputFileHandler(ioMutex)"); }
-    if(nullptr == new(&Term::Private::out) OutputFileHandler(ioMutex)) { throw Term::Exception("new(&Term::Private::out) OutputFileHandler(ioMutex)"); }
+    // MacOS was not happy wish a static mutex in the class so we create it and pass to each class;
+    static std::recursive_mutex ioMutex;
+    if(0 == m_counter)
+    {
+      attachConsole();
+      openStandardStreams();
+      if(nullptr == new(&Term::Private::in) InputFileHandler(ioMutex)) { throw Term::Exception("new(&Term::Private::in) InputFileHandler(ioMutex)"); }
+      if(nullptr == new(&Term::Private::out) OutputFileHandler(ioMutex)) { throw Term::Exception("new(&Term::Private::out) OutputFileHandler(ioMutex)"); }
+    }
+    ++m_counter;
   }
-  ++m_counter;
-}
-catch(...)
-{
-  ExceptionHandler(ExceptionDestination::StdErr);
+  catch(...)
+  {
+    ExceptionHandler(ExceptionDestination::StdErr);
+  }
 }
 
 Term::Private::FileInitializer::~FileInitializer() noexcept
-try
 {
-  --m_counter;
-  if(0 == m_counter)
+  try
   {
-    (&Term::Private::in)->~InputFileHandler();    //NOSONAR(S3432)
-    (&Term::Private::out)->~OutputFileHandler();  //NOSONAR(S3432)
-    detachConsole();
+    --m_counter;
+    if(0 == m_counter)
+    {
+      (&Term::Private::in)->~InputFileHandler();    //NOSONAR(S3432)
+      (&Term::Private::out)->~OutputFileHandler();  //NOSONAR(S3432)
+      detachConsole();
+    }
   }
-}
-catch(...)
-{
-  ExceptionHandler(ExceptionDestination::StdErr);
+  catch(...)
+  {
+    ExceptionHandler(ExceptionDestination::StdErr);
+  }
 }
 
 void Term::Private::FileInitializer::openStandardStreams() noexcept
-try
 {
+  try
+  {
 #if defined(_WIN32)
-  FILE* fDummy{nullptr};
-  if(_fileno(stderr) < 0 || _get_osfhandle(_fileno(stderr)) < 0) { Term::Private::Errno().check_if(_wfreopen_s(&fDummy, L"CONOUT$", L"w", stderr) != 0).throw_exception(R"(_wfreopen_s(&fDummy, L"CONOUT$", L"w", stderr))"); }
-  if(_fileno(stdout) < 0 || _get_osfhandle(_fileno(stdout)) < 0) { Term::Private::Errno().check_if(_wfreopen_s(&fDummy, L"CONOUT$", L"w", stdout) != 0).throw_exception(R"(_wfreopen_s(&fDummy, L"CONOUT$", L"w", stdout))"); }
-  if(_fileno(stdin) < 0 || _get_osfhandle(_fileno(stdin)) < 0) { Term::Private::Errno().check_if(_wfreopen_s(&fDummy, L"CONIN$", L"r", stdin) != 0).throw_exception(R"(_wfreopen_s(&fDummy, L"CONIN$", L"r", stdin))"); }
-  const std::size_t bestSize{BUFSIZ > 4096 ? BUFSIZ : 4096};
+    FILE* fDummy{nullptr};
+    if(_fileno(stderr) < 0 || _get_osfhandle(_fileno(stderr)) < 0) { Term::Private::Errno().check_if(_wfreopen_s(&fDummy, L"CONOUT$", L"w", stderr) != 0).throw_exception(R"(_wfreopen_s(&fDummy, L"CONOUT$", L"w", stderr))"); }
+    if(_fileno(stdout) < 0 || _get_osfhandle(_fileno(stdout)) < 0) { Term::Private::Errno().check_if(_wfreopen_s(&fDummy, L"CONOUT$", L"w", stdout) != 0).throw_exception(R"(_wfreopen_s(&fDummy, L"CONOUT$", L"w", stdout))"); }
+    if(_fileno(stdin) < 0 || _get_osfhandle(_fileno(stdin)) < 0) { Term::Private::Errno().check_if(_wfreopen_s(&fDummy, L"CONIN$", L"r", stdin) != 0).throw_exception(R"(_wfreopen_s(&fDummy, L"CONIN$", L"r", stdin))"); }
+    const std::size_t bestSize{BUFSIZ > 4096 ? BUFSIZ : 4096};
 #else
-  if(::fileno(stderr) < 0) { Term::Private::Errno().check_if(nullptr == std::freopen("/dev/tty", "w", stderr)).throw_exception(R"(std::freopen("/dev/tty", "w", stderr))"); }  //NOLINT(cppcoreguidelines-owning-memory)
-  if(::fileno(stdout) < 0) { Term::Private::Errno().check_if(nullptr == std::freopen("/dev/tty", "w", stdout)).throw_exception(R"(std::freopen("/dev/tty", "w", stdout))"); }  //NOLINT(cppcoreguidelines-owning-memory)
-  if(::fileno(stdin) < 0) { Term::Private::Errno().check_if(nullptr == std::freopen("/dev/tty", "r", stdin)).throw_exception(R"(std::freopen("/dev/tty", "r", stdin))"); }     //NOLINT(cppcoreguidelines-owning-memory)
-  struct stat stats = {};
-  ::stat("/dev/tty", &stats);
-  const std::size_t bestSize{static_cast<std::size_t>(stats.st_blksize) > 0 ? static_cast<std::size_t>(stats.st_blksize) : BUFSIZ};  //NOSONAR(S1774)
+    if(::fileno(stderr) < 0) { Term::Private::Errno().check_if(nullptr == std::freopen("/dev/tty", "w", stderr)).throw_exception(R"(std::freopen("/dev/tty", "w", stderr))"); }  //NOLINT(cppcoreguidelines-owning-memory)
+    if(::fileno(stdout) < 0) { Term::Private::Errno().check_if(nullptr == std::freopen("/dev/tty", "w", stdout)).throw_exception(R"(std::freopen("/dev/tty", "w", stdout))"); }  //NOLINT(cppcoreguidelines-owning-memory)
+    if(::fileno(stdin) < 0) { Term::Private::Errno().check_if(nullptr == std::freopen("/dev/tty", "r", stdin)).throw_exception(R"(std::freopen("/dev/tty", "r", stdin))"); }     //NOLINT(cppcoreguidelines-owning-memory)
+    struct stat stats = {};
+    ::stat("/dev/tty", &stats);
+    const std::size_t bestSize{static_cast<std::size_t>(stats.st_blksize) > 0 ? static_cast<std::size_t>(stats.st_blksize) : BUFSIZ};  //NOSONAR(S1774)
 #endif
-  Term::Private::Errno().check_if(std::setvbuf(stderr, nullptr, _IONBF, 0) != 0).throw_exception("std::setvbuf(stderr, nullptr, _IONBF, 0)");
-  Term::Private::Errno().check_if(std::setvbuf(stdout, nullptr, _IOLBF, bestSize) != 0).throw_exception("std::setvbuf(stdout, nullptr, _IOLBF, bestSize)");
-  Term::Private::Errno().check_if(std::setvbuf(stdin, nullptr, _IOLBF, bestSize) != 0).throw_exception("std::setvbuf(stdin, nullptr, _IOLBF, bestSize)");
-}
-catch(...)
-{
-  ExceptionHandler(ExceptionDestination::StdErr);
+    Term::Private::Errno().check_if(std::setvbuf(stderr, nullptr, _IONBF, 0) != 0).throw_exception("std::setvbuf(stderr, nullptr, _IONBF, 0)");
+    Term::Private::Errno().check_if(std::setvbuf(stdout, nullptr, _IOLBF, bestSize) != 0).throw_exception("std::setvbuf(stdout, nullptr, _IOLBF, bestSize)");
+    Term::Private::Errno().check_if(std::setvbuf(stdin, nullptr, _IOLBF, bestSize) != 0).throw_exception("std::setvbuf(stdin, nullptr, _IOLBF, bestSize)");
+  }
+  catch(...)
+  {
+    ExceptionHandler(ExceptionDestination::StdErr);
+  }
 }

@@ -18,27 +18,31 @@
 std::size_t Term::TerminalInitializer::m_counter{0};
 
 Term::TerminalInitializer::TerminalInitializer() noexcept
-try
 {
-  if(0 == m_counter)
+  try
   {
-    static const Private::FileInitializer files_init;
-    new(&Term::terminal) Terminal();
+    if(0 == m_counter)
+    {
+      static const Private::FileInitializer files_init;
+      new(&Term::terminal) Terminal();
+    }
+    ++m_counter;
   }
-  ++m_counter;
-}
-catch(...)
-{
-  ExceptionHandler(Private::ExceptionDestination::StdErr);
+  catch(...)
+  {
+    ExceptionHandler(Private::ExceptionDestination::StdErr);
+  }
 }
 
 Term::TerminalInitializer::~TerminalInitializer() noexcept
-try
 {
-  --m_counter;
-  if(0 == m_counter) { (&Term::terminal)->~Terminal(); }
-}
-catch(...)
-{
-  ExceptionHandler(Private::ExceptionDestination::StdErr);
+  try
+  {
+    --m_counter;
+    if(0 == m_counter) { (&Term::terminal)->~Terminal(); }
+  }
+  catch(...)
+  {
+    ExceptionHandler(Private::ExceptionDestination::StdErr);
+  }
 }
