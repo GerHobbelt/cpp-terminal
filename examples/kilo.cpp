@@ -960,7 +960,7 @@ int main(int argc, const char** argv)
       return 1;
     }
     Term::terminal.setOptions(Term::Option::ClearScreen, Term::Option::NoSignalKeys, Term::Option::NoCursor, Term::Option::Raw);
-    if(argc >= 2) 
+    if(Term::argc >= 2) 
 	{ 
       editorOpen(Term::argv[1]);
 	}
