@@ -8,7 +8,10 @@
 */
 
 #ifdef _WIN32
+  #pragma warning(push)
+  #pragma warning(disable : 4668)
   #include <windows.h>
+  #pragma warning(pop)
 #endif
 
 #include "cpp-terminal/cursor.hpp"

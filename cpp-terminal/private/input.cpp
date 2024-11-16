@@ -6,12 +6,15 @@
 *
 * SPDX-License-Identifier: MIT
 */
-
 #if defined(_WIN32)
   #include "cpp-terminal/private/unicode.hpp"
 
   #include <vector>
+  #pragma warning(push)
+  #pragma warning(disable : 4668)
+  #define WIN32_LEAN_AND_MEAN
   #include <windows.h>
+  #pragma warning(pop)
 #elif defined(__APPLE__) || defined(__wasm__) || defined(__wasm) || defined(__EMSCRIPTEN__)
   #include <cerrno>
   #include <csignal>
@@ -74,8 +77,12 @@ void sendString(Term::Private::BlockingQueue& events, std::wstring& str)
 }
 
 #endif
+Term::Private::Input::~Input()
+{
+  if(m_thread.joinable()) m_thread.join();
+}
 
-std::thread Term::Private::Input::m_thread = std::thread(Term::Private::Input::read_event);
+std::thread Term::Private::Input::m_thread{};
 
 Term::Private::BlockingQueue Term::Private::Input::m_events;
 
@@ -83,7 +90,6 @@ int Term::Private::Input::m_poll{-1};
 
 void Term::Private::Input::init_thread()
 {
-  Term::Private::Sigwinch::unblockSigwinch();
 #if defined(__linux__)
   m_poll = {::epoll_create1(EPOLL_CLOEXEC)};
   ::epoll_event signal;
@@ -95,11 +101,13 @@ void Term::Private::Input::init_thread()
   input.data.fd = {Term::Private::in.fd()};
   ::epoll_ctl(m_poll, EPOLL_CTL_ADD, Term::Private::in.fd(), &input);
 #endif
+  if(m_thread.joinable()) m_thread.join();
+  std::thread thread(Term::Private::Input::read_event);
+  m_thread.swap(thread);
 }
 
 void Term::Private::Input::read_event()
 {
-  init_thread();
   while(true)
   {
 #if defined(_WIN32)
@@ -309,6 +317,7 @@ void Term::Private::Input::startReading()
   static bool activated{false};
   if(!activated)
   {
+    init_thread();
     m_thread.detach();
     activated = true;
   }

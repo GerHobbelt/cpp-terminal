@@ -11,11 +11,16 @@
 #include "cpp-terminal/private/env.hpp"
 #include "cpp-terminal/private/exception.hpp"
 #include "cpp-terminal/private/file.hpp"
+//#include "cpp-terminal/private/signals.hpp"
+#include "cpp-terminal/private/sigwinch.hpp"
 #include "cpp-terminal/terminal.hpp"
 
 #if defined(_WIN32)
   #include <io.h>
+  #pragma warning(push)
+  #pragma warning(disable : 4668)
   #include <windows.h>
+  #pragma warning(pop)
   #if !defined(ENABLE_VIRTUAL_TERMINAL_PROCESSING)
     #define ENABLE_VIRTUAL_TERMINAL_PROCESSING 0x0004
   #endif
@@ -105,11 +110,14 @@ try
   static termios orig_termios;
   if(!enabled)
   {
+    Term::Private::Sigwinch::blockSigwinch();
+    Term::Private::Sigwinch::registerSigwinch();
     if(!Private::out.null()) { Term::Private::Errno().check_if(tcgetattr(Private::out.fd(), &orig_termios) == -1).throw_exception("tcgetattr() failed"); }
     enabled = true;
   }
   else
   {
+    Term::Private::Sigwinch::unblockSigwinch();
     unsetMouseEvents();
     unsetFocusEvents();
     if(!Private::out.null()) { Term::Private::Errno().check_if(tcsetattr(Private::out.fd(), TCSAFLUSH, &orig_termios) == -1).throw_exception("tcsetattr() failed in destructor"); }
@@ -217,7 +225,7 @@ void Term::Terminal::setMode() const
       unsetFocusEvents();
     }
     if(m_options.has(Option::NoSignalKeys)) { send.c_lflag &= ~static_cast<std::size_t>(ISIG); }  //FIXME need others flags !
-    else if(m_options.has(Option::NoSignalKeys)) { send.c_lflag |= ISIG; }
+    if(m_options.has(Option::SignalKeys)) { send.c_lflag |= ISIG; }
     Term::Private::Errno().check_if(tcsetattr(Private::out.fd(), TCSAFLUSH, &send) == -1).throw_exception("tcsetattr(Private::out.fd(), TCSAFLUSH, &send)");
   }
 #endif

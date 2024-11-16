@@ -10,13 +10,18 @@
 #include "cpp-terminal/private/file.hpp"
 
 #include "cpp-terminal/private/exception.hpp"
+#include "cpp-terminal/tty.hpp"
 
 #include <cstdio>
 #include <new>
 
 #if defined(_WIN32)
   #include <io.h>
+  #pragma warning(push)
+  #pragma warning(disable : 4668)
+  #define WIN32_LEAN_AND_MEAN
   #include <windows.h>
+  #pragma warning(pop)
 #else
   #include <sys/ioctl.h>
   #include <unistd.h>
@@ -133,8 +138,18 @@ std::string Term::Private::InputFileHandler::read() const
   ReadConsole(Private::in.handle(), &ret[0], static_cast<DWORD>(ret.size()), &nread, nullptr);
   return ret.c_str();
 #else
-  std::size_t nread{0};
-  Term::Private::Errno().check_if(::ioctl(Private::in.fd(), FIONREAD, &nread) != 0).throw_exception("::ioctl(Private::in.fd(), FIONREAD, &nread)");  //NOLINT(cppcoreguidelines-pro-type-vararg,hicpp-vararg)
+  #if defined(MAX_INPUT)
+  static const constexpr std::size_t max_input{MAX_INPUT};
+  #else
+  static const constexpr std::size_t max_input{256};
+  #endif
+  #if defined(_POSIX_MAX_INPUT)
+  static const constexpr std::size_t posix_max_input{_POSIX_MAX_INPUT};
+  #else
+  static const constexpr std::size_t posix_max_input{256};
+  #endif
+  static std::size_t nread{std::max(max_input, posix_max_input)};
+  if(is_stdin_a_tty()) Term::Private::Errno().check_if(::ioctl(Private::in.fd(), FIONREAD, &nread) != 0).throw_exception("::ioctl(Private::in.fd(), FIONREAD, &nread)");  //NOLINT(cppcoreguidelines-pro-type-vararg,hicpp-vararg)
   std::string ret(nread, '\0');
   if(nread != 0)
   {
