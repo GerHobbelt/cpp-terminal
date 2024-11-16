@@ -73,7 +73,7 @@ int main(void)
     std::size_t  h{10};
     std::size_t  w{10};
     bool         on = true;
-    Term::Window scr(term_size.columns(), term_size.rows());
+    Term::Window scr(term_size);
     bool         need_to_render{true};
     while(on)
     {
