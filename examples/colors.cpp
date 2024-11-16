@@ -24,7 +24,7 @@
 
 int main(void)
 {
-  Term::cout << "Running cpp-terminal version: " << Term::Version::string << " website : " << Term::homepage << std::endl << std::endl;
+  Term::cout << "Running cpp-terminal version: " << Term::Version::string() << " website : " << Term::homepage() << std::endl << std::endl;
 
   try
   {
