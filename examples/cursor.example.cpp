@@ -17,7 +17,13 @@
 
 #include <ostream>
 
-int main()
+#include "monolithic_examples.h"
+
+#if defined(BUILD_MONOLITHIC)
+#define main cppterminal_cursor_example_main
+#endif
+
+int main(void)
 {
   try
   {
