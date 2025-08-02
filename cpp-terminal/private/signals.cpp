@@ -23,6 +23,7 @@
   #pragma warning(disable : 4668)
   #include <windows.h>
   #pragma warning(pop)
+  
 static BOOL WINAPI consoleHandler(DWORD signal)
 {
   switch(signal)
@@ -36,6 +37,7 @@ static BOOL WINAPI consoleHandler(DWORD signal)
     default: return false;
   }
 }
+
 #endif
 
 void Term::Private::Signals::clean_terminal() noexcept { const_cast<Term::Terminal*>(m_term)->clean(); }
