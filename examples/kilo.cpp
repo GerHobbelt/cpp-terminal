@@ -509,11 +509,11 @@ void editorOpen(const std::string& filename)
   E.dirty = false;
 }
 
-void editorSetStatusMessage(const std::string fmt, ...)
+void editorSetStatusMessage(const char *fmt, ...)
 {
   va_list ap;
   va_start(ap, fmt);
-  vsnprintf(&E.statusmsg[0], E.statusmsg.capacity(), fmt.c_str(), ap);
+  vsnprintf(&E.statusmsg[0], E.statusmsg.capacity(), fmt, ap);
   va_end(ap);
 }
 
@@ -750,7 +750,7 @@ std::string editorPrompt(const std::string& prompt, void (*callback)(std::string
   buf.reserve(128);
   while(true)
   {
-    editorSetStatusMessage(prompt, buf.c_str());
+    editorSetStatusMessage(prompt.c_str(), buf.c_str());
     editorRefreshScreen();
 
     Term::Key c = Term::read_event();
