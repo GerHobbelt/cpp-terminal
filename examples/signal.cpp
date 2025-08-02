@@ -16,7 +16,14 @@
 #include <fstream>
 #include <iostream>
 
-int main()
+
+#include "monolithic_examples.h"
+
+#if defined(BUILD_MONOLITHIC)
+#define main cppterminal_signal_example_main
+#endif
+
+int main(void)
 {
   Term::terminal.setOptions(Term::Option::Raw, Term::Option::SignalKeys, Term::Option::ClearScreen);
   std::signal(SIGINT,
