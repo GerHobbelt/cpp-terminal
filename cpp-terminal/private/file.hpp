@@ -10,11 +10,13 @@
 #pragma once
 
 #include "cpp-terminal/private/file_initializer.hpp"
-
+// clang-format off
+#include <cstdio>
 #include <cstddef>
 #include <cstdint>
 #include <mutex>
 #include <string>
+// clang-format on
 
 namespace Term
 {
@@ -28,7 +30,7 @@ public:
 #if defined(_WIN32)
   using Handle = void*;
 #else
-  using Handle = std::FILE*;
+  using Handle = FILE*;
 #endif
   FileHandler(std::recursive_mutex& mutex, const std::string& file, const std::string& mode) noexcept;
   FileHandler(const FileHandler&)            = delete;
@@ -38,7 +40,7 @@ public:
   virtual ~FileHandler() noexcept;
   Handle       handle() const noexcept;
   bool         null() const noexcept;
-  std::FILE*   file() const noexcept;
+  FILE*        file() const noexcept;
   std::int32_t fd() const noexcept;
   void         lockIO();
   void         unlockIO();

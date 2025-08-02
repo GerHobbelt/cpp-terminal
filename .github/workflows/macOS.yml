@@ -95,7 +95,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        xcode: [ '15.4', '16.0', '16.1', '16.2' ]
+        xcode: [ '16.0', '16.1', '16.2', '16.3', '16.4', '26.0' ]
         standard: [ 11, 14, 17, 20 ]
     env:
       DEVELOPER_DIR: /Applications/Xcode_${{ matrix.xcode }}.app/Contents/Developer
@@ -131,7 +131,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        version: [ 12, 13, 14 ]
+        version: [ 11, 12, 13, 14, 15 ]
         standard: [ 11, 14, 17, 20 ]
 
     steps:
@@ -150,6 +150,8 @@ jobs:
         uses: xom9ikk/dotenv@v2
         with:
           path: .github/workflows
+      - name: Install GCC
+        run: brew reinstall gcc@${{matrix.version}}
       - name: 🔧 Configure
         env:
           CC: gcc-${{matrix.version}}

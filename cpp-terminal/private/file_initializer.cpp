@@ -73,6 +73,11 @@ void Term::Private::FileInitializer::detachConsole() noexcept
   }
 }
 
+#ifdef _WIN32
+  #pragma warning(push)
+  #pragma warning(disable : 4297)
+#endif
+
 Term::Private::FileInitializer::FileInitializer() noexcept
 {
   try
@@ -111,6 +116,10 @@ Term::Private::FileInitializer::~FileInitializer() noexcept
     ExceptionHandler(ExceptionDestination::StdErr);
   }
 }
+
+#ifdef _WIN32
+  #pragma warning(pop)
+#endif
 
 void Term::Private::FileInitializer::openStandardStreams() noexcept
 {

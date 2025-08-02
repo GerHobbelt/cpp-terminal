@@ -11,7 +11,6 @@
 #include "cpp-terminal/private/env.hpp"
 #include "cpp-terminal/private/exception.hpp"
 #include "cpp-terminal/private/file.hpp"
-//#include "cpp-terminal/private/signals.hpp"
 #include "cpp-terminal/private/sigwinch.hpp"
 #include "cpp-terminal/terminal.hpp"
 

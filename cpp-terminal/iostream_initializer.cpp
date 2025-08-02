@@ -17,7 +17,13 @@
 
 #include <cstddef>
 #include <iostream>
+
 std::size_t Term::IOStreamInitializer::m_counter{0};
+
+#ifdef _WIN32
+  #pragma warning(push)
+  #pragma warning(disable : 4297)
+#endif
 
 Term::IOStreamInitializer::IOStreamInitializer() noexcept
 {
@@ -59,3 +65,7 @@ Term::IOStreamInitializer::~IOStreamInitializer() noexcept
     ExceptionHandler(Private::ExceptionDestination::StdErr);
   }
 }
+
+#ifdef _WIN32
+  #pragma warning(pop)
+#endif

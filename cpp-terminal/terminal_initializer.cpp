@@ -18,6 +18,11 @@
 
 std::size_t Term::TerminalInitializer::m_counter{0};
 
+#ifdef _WIN32
+  #pragma warning(push)
+  #pragma warning(disable : 4297)
+#endif
+
 Term::TerminalInitializer::TerminalInitializer() noexcept
 {
   try
@@ -25,10 +30,9 @@ Term::TerminalInitializer::TerminalInitializer() noexcept
     if(0 == m_counter)
     {
       static const Private::FileInitializer files_init;
-      static std::vector<sighandler_t>      m_handlers;
       new(&Term::terminal) Terminal();
-      static Term::Private::Signals signals(m_handlers);
-      sighandler_t                  handler = [](int signum) { Term::Private::Signals::reset_and_raise(signum, m_handlers, Term::terminal); };
+      static Term::Private::Signals signals(Term::terminal);
+      sighandler_t                  handler = [](int signum) { signals.reset_and_raise(signum); };
       signals.setHandler(handler);
     }
     ++m_counter;
@@ -51,3 +55,7 @@ Term::TerminalInitializer::~TerminalInitializer() noexcept
     ExceptionHandler(Private::ExceptionDestination::StdErr);
   }
 }
+
+#ifdef _WIN32
+  #pragma warning(pop)
+#endif
